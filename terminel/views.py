@@ -20,17 +20,20 @@ def login(request):
     #     return redirect('index')
     if request.session.has_key('log'):
         return redirect('index')
-    elif request.session.has_key('admin-log'):
-        return redirect('adminhome')
     else:
 
         if request.method=='POST':
             username=request.POST['username']
             password=request.POST['password']
-            user = auth.authenticate(username=username,password=password)
-
+            try:
+                check=User.objects.get(username=username)
+                if not check.is_active:
+                    messages.info(request,'acces denied')
+                    return redirect('login')
+            except:
+                pass
+            user = auth.authenticate(request,username=username,password=password)
             if user is not None:
-                auth.login(request,user)
                 request.session['log']='log'
                 return redirect('index')
             else:
@@ -71,7 +74,6 @@ def register(request):
 
 def logout(request):
     del request.session['log']
-    auth.logout(request)
     return redirect('login')
 
 
@@ -91,7 +93,7 @@ def adminlogin(request):
             if user is not None:
 
                 if user.is_superuser:
-                    auth.login(request,user)
+                    # auth.login(request,user)
                     request.session['admin-log']='admin-log'
                     messages.info(request,'succesfully loged')
                     return redirect('adminhome')
@@ -124,6 +126,7 @@ def adminhome(request):
 #     context = {'user':user}
 #     return render(request,'delete.html',context)
 
+
 def delete(request,pk):
     User.objects.get(id=pk).delete()
     return redirect('adminhome')
@@ -134,6 +137,8 @@ def block(request,pk):
     user=User.objects.get(id=pk)
     user.is_active=False
     user.save()
+    if 'log' in request.session:
+        del request.session['log']
     return redirect('adminhome')
 
 def unblock(request,pk):
@@ -143,18 +148,29 @@ def unblock(request,pk):
     return redirect('adminhome')
 
 def update(request,pk):
-    user = User.objects.get(id=pk)
-    form = userupdate(instance=user)
-    
-    if request.method=="POST":
-        form = userupdate(request.POST, instance=user)
-        if form.is_valid():
-            form.save()
-        return redirect('adminhome')
-    context = {
-        'form' : form,
-    }
-    return render(request,'update.html',context)
+    if request.session.has_key('admin-log'):
+        print(pk)
+        user = User.objects.get(id=pk)
+        form = userupdate(instance=user)
+        context = {'form' : form, }
+        if request.method=="POST":
+            print(user)
+            form = userupdate(request.POST, instance=user)
+            if form.is_valid():
+                try:
+                    form.save()
+                except:
+                    # if User.objects.filter(username='username').exists:
+                    #     messages.info(request,'user is already exists') 
+                    # else:
+                    messages.info(request,'Email address is already exists') 
+                    return render(request,'update.html',context)
+            return redirect('adminhome')
+
+        context = {'form' : form}
+        return render(request,'update.html',context)
+    else:
+        return redirect('adminlogin')
 
 
 
@@ -182,3 +198,6 @@ def adminlogout(request):
     del request.session['admin-log']
     auth.logout(request)
     return redirect('adminlogin')
+
+
+

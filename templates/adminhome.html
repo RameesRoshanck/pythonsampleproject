@@ -61,7 +61,7 @@
                 <td>{{ x.username }}</td>
                 <td>{{ x.email }}</td>
                 <td> <a href="" data-bs-toggle="modal" data-bs-target="#exampleModal"  class="btn btn-primary" onclick="deleteuser('{{x.id}}')">Delete</a></td>
-                <td> <a href="{% url 'update' x.id %}" class="btn btn-primary" onclick="return confirm('Are you sure you want to edit this?')">Edit</a></td>
+                <td> <a href="{% url 'update' x.id %}" class="btn btn-primary">Edit</a></td>
                 {% if x.is_active %}
                 <td> <a href="" data-bs-toggle="modal" data-bs-target="#exampleModal" class="btn btn-danger"onclick="blockUser('{{x.id}}')">Block</a></td>
                 {%else%}

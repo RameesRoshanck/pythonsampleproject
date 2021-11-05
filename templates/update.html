@@ -7,15 +7,37 @@
 
 
     <div class="col-12 container">
-   <form action="{% url 'update' user.id %}" method="POST">
+   <form action="" id="sweet-form" method="POST">
        {% csrf_token %}
         {{ form | crispy }}
+        {% for message in messages %}
+                            <li >{{ message }}</li>
+                            {% endfor %}
 
     <div class="pt-5">
-        <input class="btn btn-danger" type="submit" value="Update">
+        <input class="btn btn-danger" id="update" type="submit" value="Update">
         <a class="btn btn-primary" href="{% url 'adminhome' %}">cancel</a>
     </div>
       
    </form>
     </div>
+   <script>
+       $(document).on('click','#update',function(event){
+           event.preventDefault();
+           swal({
+               title:"are you sure?",
+               text:"do you want to uppent this user",
+               icon:"warning",
+               buttons:true,
+               dangerMode:true,
+            }).then(function(result){
+                if(result){
+
+                    $('#sweet-form').submit();
+                }
+            }); 
+       });
+   </script>
+
+    
     {% endblock%}
